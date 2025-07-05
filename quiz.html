@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz App</title>
+  <link rel="icon" href="/1.jpeg" type="image/x-icon" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #fff8dc, #ffeb99);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .quiz-container {
+      background-color: #fffacd;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #d4af37;
+    }
+
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .options button {
+      display: block;
+      width: 100%;
+      background-color: #ffe066;
+      border: none;
+      padding: 10px 20px;
+      margin: 8px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .options button:hover {
+      background-color: #ffcc00;
+    }
+
+    #score {
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #next-btn, #restart-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #f7c948;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .wrong-msg {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>🌟 Online Quiz Game 🌟</h1>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <div id="score"></div>
+    <div class="wrong-msg" id="wrong-msg"></div>
+    <button id="next-btn">Next Round</button>
+    <button id="restart-btn">Restart</button>
+  </div>
+
+  <script>
+    const allQuestions = [
+      { q: "What is the capital of France?", a: ["London", "Berlin", "Paris", "Madrid"], c: 2 },
+      { q: "What is 2 + 2?", a: ["3", "4", "5", "22"], c: 1 },
+      { q: "Which planet is known as the Red Planet?", a: ["Earth", "Mars", "Venus", "Jupiter"], c: 1 },
+      { q: "HTML stands for?", a: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language", "None"], c: 0 },
+      { q: "CSS is used for?", a: ["Styling", "Logic", "Database", "Security"], c: 0 },
+      { q: "JS is short for?", a: ["Java", "JavaScript", "JSON", "JQuery"], c: 1 },
+      { q: "Which ocean is the largest?", a: ["Atlantic", "Pacific", "Indian", "Arctic"], c: 1 },
+      { q: "What is 5 x 3?", a: ["15", "20", "10", "25"], c: 0 },
+      { q: "Who wrote 'Romeo and Juliet'?", a: ["Shakespeare", "Homer", "Tolkien", "Rowling"], c: 0 },
+      { q: "Which gas do plants use?", a: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], c: 2 },
+      { q: "What color is a banana?", a: ["Red", "Blue", "Yellow", "Purple"], c: 2 },
+      { q: "Largest animal on Earth?", a: ["Elephant", "Whale", "Shark", "Giraffe"], c: 1 },
+      { q: "How many continents?", a: ["5", "6", "7", "8"], c: 2 },
+      { q: "Fastest land animal?", a: ["Tiger", "Cheetah", "Leopard", "Lion"], c: 1 },
+      { q: "Which metal is liquid?", a: ["Gold", "Mercury", "Silver", "Iron"], c: 1 },
+      { q: "Sun is a?", a: ["Planet", "Star", "Comet", "Moon"], c: 1 },
+      { q: "How many days in a leap year?", a: ["364", "366", "365", "367"], c: 1 },
+      { q: "Boiling point of water?", a: ["50°C", "90°C", "100°C", "120°C"], c: 2 },
+      { q: "Which organ pumps blood?", a: ["Liver", "Heart", "Brain", "Lungs"], c: 1 },
+      { q: "Taj Mahal is in?", a: ["Delhi", "Agra", "Mumbai", "Jaipur"], c: 1 },
+      { q: "Primary color?", a: ["Green", "Blue", "Pink", "Brown"], c: 1 },
+      { q: "Water formula?", a: ["H2O", "CO2", "O2", "CH4"], c: 0 },
+      { q: "Which is a web browser?", a: ["Google", "Edge", "Bing", "Yahoo"], c: 1 },
+      { q: "First month of year?", a: ["January", "February", "March", "April"], c: 0 },
+      { q: "Shape with 4 equal sides?", a: ["Rectangle", "Square", "Circle", "Triangle"], c: 1 },
+      { q: "Sound travels fastest in?", a: ["Air", "Water", "Steel", "Vacuum"], c: 2 },
+      { q: "Largest country?", a: ["China", "Russia", "USA", "Canada"], c: 1 },
+      { q: "Eyes help in?", a: ["Seeing", "Hearing", "Tasting", "Smelling"], c: 0 },
+      { q: "Octopus has how many legs?", a: ["6", "8", "10", "12"], c: 1 },
+      { q: "Which is not a fruit?", a: ["Apple", "Carrot", "Banana", "Orange"], c: 1 }
+    ];
+
+    let round = 0;
+    let score = 0;
+    let current = 0;
+    let usedQuestions = [];
+    let selectedQuestions = [];
+
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const scoreEl = document.getElementById("score");
+    const nextBtn = document.getElementById("next-btn");
+    const restartBtn = document.getElementById("restart-btn");
+    const wrongMsg = document.getElementById("wrong-msg");
+
+    function getRandomQuestions(exclude) {
+      const unused = allQuestions.filter(q => !exclude.includes(q));
+      const shuffled = [...unused].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 10);
+    }
+
+    function loadQuestion() {
+      wrongMsg.textContent = "";
+      const q = selectedQuestions[current];
+      questionEl.textContent = `Q${current + 1}: ${q.q}`;
+      optionsEl.innerHTML = "";
+      q.a.forEach((option, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = option;
+        btn.onclick = () => handleAnswer(i);
+        optionsEl.appendChild(btn);
+      });
+      scoreEl.textContent = `Score: ${score}`;
+    }
+
+    function handleAnswer(selected) {
+      const correct = selectedQuestions[current].c;
+      const right=selectedQuestions[current].a[correct];
+      if (selected === correct) {
+        score++;
+        wrongMsg.textContent = "✅ Right";
+      } else {
+        alert(`the right answer was ${right}`)
+        wrongMsg.textContent = "❌ Wrong!";
+      }
+      current++;
+      if (current < selectedQuestions.length) {
+        setTimeout(loadQuestion, 1000);
+      } else {
+        round++;
+        usedQuestions.push(...selectedQuestions);
+        if (round < 3) {
+          nextBtn.style.display = 'inline-block';
+          questionEl.textContent = `✅ Round ${round} completed!`;
+          optionsEl.innerHTML = "<p>Click next to continue to next round.</p>";
+        } else {
+          questionEl.textContent = `🎉 Quiz Finished!`;
+          optionsEl.innerHTML = "";
+          scoreEl.textContent = `Final Score: ${score} / 30`;
+          restartBtn.style.display = 'inline-block';
+        }
+      }
+    }
+
+    nextBtn.onclick = () => {
+      nextBtn.style.display = 'none';
+      current = 0;
+      selectedQuestions = getRandomQuestions(usedQuestions);
+      loadQuestion();
+    };
+
+    restartBtn.onclick = () => {
+      round = 0;
+      score = 0;
+      current = 0;
+      usedQuestions = [];
+      restartBtn.style.display = 'none';
+      selectedQuestions = getRandomQuestions([]);
+      loadQuestion();
+    };
+
+    selectedQuestions = getRandomQuestions([]);
+    loadQuestion();
+  </script>
+</body>
+</html>
